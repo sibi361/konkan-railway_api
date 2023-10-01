@@ -29,8 +29,8 @@ const fetchData = async () =>
 
                 return {
                     ...obj,
-                    [cells[1].textContent.trim()]: {
-                        number: cells[0].textContent,
+                    [cells[0].textContent.trim()]: {
+                        name: cells[1].textContent.trim(),
                         status: cells[2].textContent.toLocaleLowerCase(),
                         station: cells[3].textContent.toLocaleLowerCase(),
                         arrivedTime: {
