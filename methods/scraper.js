@@ -1,17 +1,16 @@
+const env = require("../assets/constants.js");
 const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
 
 const fetchData = async () =>
     puppeteer.launch({ headless: "false" }).then(async function (browser) {
-        // if (DEBUG) console.log("Fetching data from upstream");
+        if (env.DEBUG) console.log("Fetching data from upstream");
 
         const page = await browser.newPage();
         const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
         await page.setUserAgent(UA);
 
-        await page.goto(
-            "https://konkanrailway.com/VisualTrain/otrktp0100Table.jsp"
-        );
+        await page.goto(env.UPSTREAM_URL);
 
         const data = await page.evaluate(() => {
             const table = document.querySelector("#empNoHelpList");
@@ -49,6 +48,8 @@ const fetchData = async () =>
             return response;
         });
         await browser.close();
+        if (env.DEBUG) console.log("Upstream fetch successful\n");
+
         return data;
     });
 

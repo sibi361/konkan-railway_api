@@ -1,5 +1,4 @@
-const DEBUG = true;
-
+const env = require("./assets/constants.js");
 const express = require("express");
 const scraper = require("./methods/scraper.js");
 
@@ -21,10 +20,10 @@ const updateData = () => {
 };
 
 updateData();
-setTimeout(updateData, 10000);
+setInterval(updateData, env.REFRESH_INTERVAL * 1000);
 
-app.listen(7000, function () {
-    if (DEBUG) console.log(`Running on port 7000.`);
+app.listen(env.PORT, function () {
+    if (env.DEBUG) console.log(`Running on port ${env.PORT}.`);
 });
 
 app.get("/", function (req, res) {
