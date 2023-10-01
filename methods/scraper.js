@@ -13,6 +13,12 @@ const fetchData = async () =>
         await page.goto(env.UPSTREAM_URL);
 
         const data = await page.evaluate(() => {
+            const toTitleCase = (input) => {
+                return `${input[0].toLocaleUpperCase()}${input
+                    .slice(1)
+                    .toLocaleLowerCase()}`;
+            };
+
             const table = document.querySelector("#empNoHelpList");
 
             const timeStampRow = table.querySelectorAll("tr")[1];
@@ -32,12 +38,12 @@ const fetchData = async () =>
                     [cells[0].textContent.trim()]: {
                         name: cells[1].textContent.trim(),
                         status: cells[2].textContent.toLocaleLowerCase(),
-                        station: cells[3].textContent.toLocaleLowerCase(),
+                        station: toTitleCase(cells[3].textContent),
                         arrivedTime: {
                             hours: cells[4].textContent.split(":")[0],
                             minutes: cells[4].textContent.split(":")[1],
                         },
-                        delayed: {
+                        delayedTime: {
                             hours: cells[5].textContent.split(":")[0],
                             minutes: cells[5].textContent.split(":")[1],
                         },
