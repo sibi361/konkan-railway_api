@@ -58,6 +58,11 @@ Due to poor network connectivity near most railway stations and during transit, 
 
 When deployed on a cloud server, this API can instantly fetch the upstream site and send the required information to the client, consuming well under 1KB, hence leaving no chance for lag.
 
+![postman_api_test_screenshot](./images/postman_screenshot.png)
+
+~550 Bytes versus ~120KB, that too without the assets
+
+![official_website_screenshot](./images/official_website_screnshot.png)
 
 ## Legal
 
