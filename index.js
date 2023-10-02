@@ -50,8 +50,6 @@ app.get("/", function (req, res) {
 });
 
 app.get("/fetchData", async function (req, res) {
-    const latest = req.query.latest;
-
     typeof req.query.latest !== "undefined"
         ? await updateData().catch((e) =>
               res.send({ message: `Error: ${e}`, success: false })
@@ -65,9 +63,8 @@ app.get("/fetchStations", async function (req, res) {
     res.send({ stations: globalData?.stations, success: true });
 });
 
-app.get("/fetchTrain", async function (req, res) {
-    const trainNo = req.query.trainNo;
-    const latest = req.query.latest;
+app.get("/fetchTrain/:trainNo", async function (req, res) {
+    const trainNo = req.params.trainNo;
 
     if (!trainNo)
         res.send({

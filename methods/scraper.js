@@ -79,13 +79,11 @@ const fetchStations = () =>
         await page.goto(env.UPSTREAM_STATIONS_URL);
 
         const response = await page.evaluate(() => {
-            stationsSelectEle = document.querySelector("#stationId");
-
-            options = Array.from(
+            const stationsSelectEle = document.querySelector("#stationId");
+            const options = Array.from(
                 stationsSelectEle.querySelectorAll("option")
-            ).slice(1);
-
-            stations = options.map((option) => option.textContent.trim());
+            ).slice(1); // exclude header
+            const stations = options.map((option) => option.textContent.trim());
 
             return { stations };
         });
