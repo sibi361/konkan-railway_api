@@ -1,4 +1,4 @@
-const env = require("../assets/constants.js");
+const env = require("../constants.js");
 const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
 

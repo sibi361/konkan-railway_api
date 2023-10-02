@@ -1,4 +1,4 @@
-const env = require("./assets/constants.js");
+const env = require("./constants.js");
 const express = require("express");
 const scraper = require("./methods/scraper.js");
 
@@ -35,16 +35,23 @@ app.listen(env.PORT, function () {
     if (env.DEBUG) console.log(`Running on port ${env.PORT}.`);
 });
 
+app.get("/", function (req, res) {
+    res.send({
+        message: `Please visit ${env.REPO_URL} for API documentation`,
+        success: true,
+    });
+});
+
 app.get("/fetchData", async function (req, res) {
     const latest = req.query.latest;
 
     latest
         ? await updateData().catch((e) =>
-              res.send({ message: `Error: ${e}`, response: false })
+              res.send({ message: `Error: ${e}`, success: false })
           )
         : {};
 
-    res.send({ ...globalData, response: true });
+    res.send({ ...globalData, success: true });
 });
 
 app.get("/getTrain", async function (req, res) {
@@ -54,18 +61,18 @@ app.get("/getTrain", async function (req, res) {
     if (!trainNo)
         res.send({
             message: 'Error: "trainNo" parameter not supplied',
-            response: false,
+            success: false,
         });
 
     if (latest)
         await updateData().catch((e) =>
-            res.send({ message: `Error: ${e}`, response: false })
+            res.send({ message: `Error: ${e}`, success: false })
         );
 
     globalData?.trains[trainNo]
-        ? res.send({ ...globalData?.trains[trainNo], response: true })
+        ? res.send({ ...globalData?.trains[trainNo], success: true })
         : res.send({
-              message: `Train number ${trainNo} NOT found`,
-              response: false,
+              message: `Train number ${trainNo} NOT found. Perhaps it hasn't started its course yet.`,
+              success: false,
           });
 });
