@@ -4,19 +4,27 @@ const userAgents = require("../assets/userAgents.json");
 
 const fetchData = async () =>
     puppeteer.launch({ headless: "false" }).then(async function (browser) {
-        if (env.DEBUG) console.log("Fetching data from upstream");
+        if (env.DEBUG) console.log("Fetching trains data from upstream");
 
         const page = await browser.newPage();
         const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
         await page.setUserAgent(UA);
 
-        await page.goto(env.UPSTREAM_URL);
+        await page.goto(env.UPSTREAM_TRAINS_URL);
 
-        const data = await page.evaluate(() => {
+        const response = await page.evaluate(() => {
             const toTitleCase = (input) => {
-                return `${input[0].toLocaleUpperCase()}${input
-                    .slice(1)
-                    .toLocaleLowerCase()}`;
+                if (!input) return "";
+
+                return input
+                    .split(" ")
+                    .map(
+                        (word) =>
+                            `${word[0].toLocaleUpperCase()}${word
+                                .slice(1)
+                                .toLocaleLowerCase()}`
+                    )
+                    .join(" ");
             };
 
             const table = document.querySelector("#empNoHelpList");
@@ -27,14 +35,14 @@ const fetchData = async () =>
                 `${timeSplit[0].split("/").reverse().join("-")}` +
                 `T${timeSplit[1]}`;
 
-            const response = { lastUpdatedAt: timeStamp, trains: {} };
+            const data = { lastUpdatedAt: timeStamp, trains: {} };
             const rows = Array.from(table.querySelectorAll("tr")).slice(3);
 
-            response.trains = Array.from(rows).reduce((obj, row) => {
+            data.trains = Array.from(rows).reduce((trains, row) => {
                 const cells = row.querySelectorAll("td");
 
                 return {
-                    ...obj,
+                    ...trains,
                     [cells[0].textContent.trim()]: {
                         name: cells[1].textContent.trim(),
                         status: cells[2].textContent.toLocaleLowerCase(),
@@ -51,14 +59,44 @@ const fetchData = async () =>
                 };
             }, {});
 
-            return response;
+            return data;
         });
-        await browser.close();
-        if (env.DEBUG) console.log("Upstream fetch successful\n");
 
-        return data;
+        await browser.close();
+        if (env.DEBUG) console.log("Upstream trains fetch successful\n");
+
+        return response;
+    });
+
+const fetchStations = () =>
+    puppeteer.launch({ headless: "false" }).then(async function (browser) {
+        if (env.DEBUG) console.log("Fetching stations data from upstream");
+
+        const page = await browser.newPage();
+        const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
+        await page.setUserAgent(UA);
+
+        await page.goto(env.UPSTREAM_STATIONS_URL);
+
+        const response = await page.evaluate(() => {
+            stationsSelectEle = document.querySelector("#stationId");
+
+            options = Array.from(
+                stationsSelectEle.querySelectorAll("option")
+            ).slice(1);
+
+            stations = options.map((option) => option.textContent.trim());
+
+            return { stations };
+        });
+
+        await browser.close();
+        if (env.DEBUG) console.log("Upstream stations fetch successful\n");
+
+        return response;
     });
 
 module.exports = {
     fetchData,
+    fetchStations,
 };

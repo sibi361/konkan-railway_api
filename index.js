@@ -14,13 +14,20 @@ app.use(function (req, res, next) {
     next();
 });
 
-let globalData;
+let globalData = {};
+new Promise(() => {
+    const browserResponse = scraper.fetchStations();
+    browserResponse.then((data) => {
+        globalData = { ...globalData, stations: data.stations };
+    });
+});
+
 const updateData = () =>
     new Promise((resolve, reject) => {
         try {
             const browserResponse = scraper.fetchData();
             browserResponse.then((data) => {
-                globalData = data;
+                globalData = { ...data, ...globalData };
                 resolve(data);
             });
         } catch (e) {
@@ -54,6 +61,10 @@ app.get("/fetchData", async function (req, res) {
     res.send({ ...globalData, success: true });
 });
 
+app.get("/fetchStations", async function (req, res) {
+    res.send({ stations: globalData?.stations, success: true });
+});
+
 app.get("/getTrain", async function (req, res) {
     const latest = req.query.latest;
     const trainNo = req.query.tno;
@@ -72,7 +83,7 @@ app.get("/getTrain", async function (req, res) {
     globalData?.trains[trainNo]
         ? res.send({ ...globalData?.trains[trainNo], success: true })
         : res.send({
-              message: `Train number ${trainNo} NOT found. Perhaps it hasn't started its course yet.`,
+              message: `Train number ${trainNo} NOT found. It might not have started yet.`,
               success: false,
           });
 });

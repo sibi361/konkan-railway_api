@@ -1,14 +1,11 @@
-const DEBUG = true;
-const PORT = 7000;
-const REFRESH_INTERVAL = 30; // in seconds
-const UPSTREAM_URL =
-    "https://konkanrailway.com/VisualTrain/otrktp0100Table.jsp";
-const REPO_URL = "https://github.com/sibi361/konkan-railway_api";
-
-module.exports = {
-    DEBUG,
-    PORT,
-    REFRESH_INTERVAL,
-    UPSTREAM_URL,
-    REPO_URL,
+const env = {
+    DEBUG: true,
+    PORT: 7000,
+    REFRESH_INTERVAL: 60,
+    UPSTREAM_TRAINS_URL:
+        "https://konkanrailway.com/VisualTrain/otrktp0100Table.jsp",
+    UPSTREAM_STATIONS_URL: "https://konkanrailway.com/VisualTrain/",
+    REPO_URL: "https://github.com/sibi361/konkan-railway_api",
 };
+
+module.exports = env;
