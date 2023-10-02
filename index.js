@@ -52,7 +52,7 @@ app.get("/", function (req, res) {
 app.get("/fetchData", async function (req, res) {
     const latest = req.query.latest;
 
-    latest
+    typeof req.query.latest !== "undefined"
         ? await updateData().catch((e) =>
               res.send({ message: `Error: ${e}`, success: false })
           )
@@ -66,8 +66,8 @@ app.get("/fetchStations", async function (req, res) {
 });
 
 app.get("/fetchTrain", async function (req, res) {
-    const latest = req.query.latest;
     const trainNo = req.query.trainNo;
+    const latest = req.query.latest;
 
     if (!trainNo)
         res.send({
@@ -75,7 +75,7 @@ app.get("/fetchTrain", async function (req, res) {
             success: false,
         });
     else {
-        if (latest)
+        if (typeof req.query.latest !== "undefined")
             await updateData().catch((e) =>
                 res.send({ message: `Error: ${e}`, success: false })
             );
