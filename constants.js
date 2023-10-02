@@ -6,6 +6,7 @@ const env = {
         "https://konkanrailway.com/VisualTrain/otrktp0100Table.jsp",
     UPSTREAM_STATIONS_URL: "https://konkanrailway.com/VisualTrain/",
     REPO_URL: "https://github.com/sibi361/konkan-railway_api",
+    API_VERSION: 1,
 };
 
 module.exports = env;
