@@ -24,7 +24,7 @@ const updateData = () =>
         }
     });
 
-updateData();
+updateData(); // at init
 setInterval(updateData, env.REFRESH_INTERVAL * 1000);
 
 router.get("/", function (req, res) {
