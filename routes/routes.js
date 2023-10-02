@@ -24,8 +24,10 @@ const updateData = () =>
         }
     });
 
-updateData(); // at init
-setInterval(updateData, env.REFRESH_INTERVAL * 1000);
+// at initupdateData();
+
+// periodically fetch the latest data from upstream
+setInterval(updateData, env.UPSTREAM_REFRESH_INTERVAL * 1000);
 
 router.get("/", function (req, res) {
     res.send({

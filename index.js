@@ -21,5 +21,5 @@ app.get("/", function (req, res) {
 });
 
 app.listen(env.PORT, function () {
-    if (env.DEBUG) console.log(`Running on port ${env.PORT}.`);
+    if (env.DEBUG) console.log(`Running on port ${env.PORT}`);
 });
