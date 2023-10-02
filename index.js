@@ -65,25 +65,31 @@ app.get("/fetchStations", async function (req, res) {
     res.send({ stations: globalData?.stations, success: true });
 });
 
-app.get("/getTrain", async function (req, res) {
+app.get("/fetchTrain", async function (req, res) {
     const latest = req.query.latest;
-    const trainNo = req.query.tno;
+    const trainNo = req.query.trainNo;
 
     if (!trainNo)
         res.send({
             message: 'Error: "trainNo" parameter not supplied',
             success: false,
         });
+    else {
+        if (latest)
+            await updateData().catch((e) =>
+                res.send({ message: `Error: ${e}`, success: false })
+            );
 
-    if (latest)
-        await updateData().catch((e) =>
-            res.send({ message: `Error: ${e}`, success: false })
-        );
-
-    globalData?.trains[trainNo]
-        ? res.send({ ...globalData?.trains[trainNo], success: true })
-        : res.send({
-              message: `Train number ${trainNo} NOT found. It might not have started yet.`,
-              success: false,
-          });
+        globalData?.trains[trainNo]
+            ? res.send({
+                  lastUpdatedAt: globalData?.lastUpdatedAt,
+                  [trainNo]: globalData?.trains[trainNo],
+                  success: true,
+              })
+            : res.send({
+                  lastUpdatedAt: globalData?.lastUpdatedAt,
+                  message: `Train number ${trainNo} NOT found. It might not have started yet.`,
+                  success: false,
+              });
+    }
 });

@@ -63,7 +63,7 @@ const fetchData = async () =>
         });
 
         await browser.close();
-        if (env.DEBUG) console.log("Upstream trains fetch successful\n");
+        if (env.DEBUG) console.log("Upstream trains fetch successful");
 
         return response;
     });
