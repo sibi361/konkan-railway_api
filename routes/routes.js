@@ -24,7 +24,8 @@ const updateData = () =>
         }
     });
 
-// at initupdateData();
+// at init
+updateData();
 
 // periodically fetch the latest data from upstream
 setInterval(updateData, env.UPSTREAM_REFRESH_INTERVAL * 1000);
