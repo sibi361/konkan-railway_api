@@ -5,9 +5,8 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
 
 ## Usage
 
-#### Docker Compose
+### Docker Compose
 
-```
 - Clone this repository
     ```
     git clone https://github.com/sibi361/konkan-railway_api.git
@@ -18,9 +17,8 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
     ```
     It will then be available by default at http://localhost:3000/api/v1/
 
-```
 
-#### NodeJS
+### NodeJS
 
 - Clone this repository
     ```
