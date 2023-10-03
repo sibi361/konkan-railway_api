@@ -1,0 +1,13 @@
+services:
+    app:
+        container_name: app
+        image: app
+        restart: no
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: base
+        ports:
+            - "${OUTER_PORT}:${INNER_PORT}"
+        security_opt: 
+            - seccomp=chrome.json

@@ -5,6 +5,23 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
 
 ## Usage
 
+#### Docker Compose
+
+```
+- Clone this repository
+    ```
+    git clone https://github.com/sibi361/konkan-railway_api.git
+    ```
+- Run the server
+    ```
+    docker compose up --build
+    ```
+    It will then be available by default at http://localhost:3000/api/v1/
+
+```
+
+#### NodeJS
+
 - Clone this repository
     ```
     git clone https://github.com/sibi361/konkan-railway_api.git
@@ -15,13 +32,13 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
     cd konkan-railway_api
     npm install
     ```
-- Configure options in ```constants.js``` if needed
 - Run the server
     ```
     npm run start
     ```
-    It will then be available by default at http://localhost:7000/api/v1/
+    It will then be available by default at http://localhost:3000/api/v1/
 
+Parameters such as the API listening port can be configured in ```.env``` for Docker Compose and ```constants.js``` for NodeJS.
 
 ## Available Endpoints
 
