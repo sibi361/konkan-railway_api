@@ -47,7 +47,7 @@ const fetchData = async () =>
                         name: cells[1].textContent.trim(),
                         status: cells[2].textContent.toLocaleLowerCase(),
                         station: toTitleCase(cells[3].textContent),
-                        arrivedTime: {
+                        statusTime: {
                             hours: cells[4].textContent.split(":")[0],
                             minutes: cells[4].textContent.split(":")[1],
                         },
