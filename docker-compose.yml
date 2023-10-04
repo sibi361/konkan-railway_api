@@ -1,8 +1,8 @@
 services:
     app:
-        container_name: app
-        image: app
-        restart: no
+        container_name: konkan-railway_api_v1
+        image: img_konkan-railway_api_v1
+        restart: on-failure:3
         build:
             context: .
             dockerfile: Dockerfile
