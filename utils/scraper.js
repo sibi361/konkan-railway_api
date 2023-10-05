@@ -1,6 +1,7 @@
 const env = require("../constants.js");
 const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
+const res = require("express/lib/response.js");
 
 const fetchData = async () =>
     puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {
@@ -35,7 +36,7 @@ const fetchData = async () =>
                 `${timeSplit[0].split("/").reverse().join("-")}` +
                 `T${timeSplit[1]}`;
 
-            const data = { lastUpdatedAt: timeStamp, trains: {} };
+            const data = { lastUpdatedAt: timeStamp };
             const rows = Array.from(table.querySelectorAll("tr")).slice(3);
 
             data.trains = Array.from(rows).reduce((trains, row) => {
@@ -58,12 +59,13 @@ const fetchData = async () =>
                     },
                 };
             }, {});
+            data.count_trains = Object.keys(data.trains).length;
 
             return data;
         });
 
         await browser.close();
-        if (env.DEBUG) console.log("Upstream trains fetch successful");
+        if (env.DEBUG) console.log(`Updated trains count: ${response.count}`);
 
         return response;
     });
@@ -85,11 +87,11 @@ const fetchStations = () =>
             ).slice(1); // exclude header
             const stations = options.map((option) => option.textContent.trim());
 
-            return { stations };
+            return { stations, count: stations.length };
         });
 
         await browser.close();
-        if (env.DEBUG) console.log("Upstream stations fetch successful\n");
+        if (env.DEBUG) console.log(`Stations count: ${response.count}`);
 
         return response;
     });

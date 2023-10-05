@@ -8,7 +8,11 @@ let globalData = {};
 // fetch stations list
 const browserResponse = scraper.fetchStations();
 browserResponse.then((data) => {
-    globalData = { ...globalData, stations: data.stations };
+    globalData = {
+        ...globalData,
+        stations: data.stations,
+        count_stations: data.count,
+    };
 });
 
 const updateData = () =>
@@ -60,6 +64,7 @@ router.get("/fetchTrain", function (req, res) {
 
 router.get("/fetchTrain/:trainNo", async function (req, res) {
     const trainNo = req.params.trainNo;
+    if (env.DEBUG) console.log(`Fetching train: ${trainNo}`);
 
     if (typeof req.query.latest !== "undefined")
         await updateData().catch((e) =>
