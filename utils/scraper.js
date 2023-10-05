@@ -59,13 +59,14 @@ const fetchData = async () =>
                     },
                 };
             }, {});
-            data.count_trains = Object.keys(data.trains).length;
 
             return data;
         });
+        response.count_trains = Object.keys(response.trains).length;
 
         await browser.close();
-        if (env.DEBUG) console.log(`Updated trains count: ${response.count}`);
+        if (env.DEBUG)
+            console.log(`Updated trains count: ${response.count_trains}`);
 
         return response;
     });
@@ -85,9 +86,15 @@ const fetchStations = () =>
             const options = Array.from(
                 stationsSelectEle.querySelectorAll("option")
             ).slice(1); // exclude header
-            const stations = options.map((option) => option.textContent.trim());
+            const stations = options.reduce(
+                (stations, option) => ({
+                    ...stations,
+                    [option.textContent.trim()]: {},
+                }),
+                {}
+            );
 
-            return { stations, count: stations.length };
+            return { stations, count: Object.keys(stations).length };
         });
 
         await browser.close();

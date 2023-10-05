@@ -3,13 +3,14 @@ const express = require("express");
 const router = express.Router();
 const scraper = require("../utils/scraper.js");
 
-let globalData = {};
+let stationsData = {},
+    trainsData = {};
 
 // fetch stations list
 const browserResponse = scraper.fetchStations();
 browserResponse.then((data) => {
-    globalData = {
-        ...globalData,
+    stationsData = {
+        ...stationsData,
         stations: data.stations,
         count_stations: data.count,
     };
@@ -20,7 +21,7 @@ const updateData = () =>
         try {
             const browserResponse = scraper.fetchData();
             browserResponse.then((data) => {
-                globalData = { ...data, ...globalData };
+                trainsData = { ...data, ...trainsData };
                 resolve(data);
             });
         } catch (e) {
@@ -31,7 +32,7 @@ const updateData = () =>
 // at init
 updateData();
 
-// periodically fetch the latest data from upstream
+// periodically refresh data from upstream
 setInterval(updateData, env.UPSTREAM_REFRESH_INTERVAL * 1000);
 
 router.get("/", function (req, res) {
@@ -41,23 +42,76 @@ router.get("/", function (req, res) {
     });
 });
 
-router.get("/fetchData", async function (req, res) {
-    typeof req.query.latest !== "undefined"
-        ? await updateData().catch((e) =>
-              res.send({ message: `Error: ${e}`, success: false })
-          )
-        : {};
-
-    res.send({ ...globalData, success: true });
+router.get("/fetchStations", function (req, res) {
+    if (stationsData?.stations) res.send({ ...stationsData, success: true });
+    else {
+        res.status(503);
+        res.send({
+            message: "Server is retrieving stations. Please wait.",
+            success: false,
+        });
+    }
 });
 
-router.get("/fetchStations", function (req, res) {
-    res.send({ stations: globalData?.stations, success: true });
+router.get("/fetchStation", function (req, res) {
+    res.status(400);
+    res.send({
+        message: "Error: station name parameter not provided",
+        success: false,
+    });
+});
+
+router.get("/fetchStation/:stationName", function (req, res) {
+    const stationName = req.params.stationName;
+    if (env.DEBUG) console.log(`Fetching station: ${stationName}`);
+
+    if (stationsData?.stations)
+        if (Object.keys(stationsData?.stations).includes(stationName))
+            res.send({
+                [stationName]: stationsData.stations[stationName],
+                success: true,
+            });
+        else {
+            res.status(404);
+            res.send({
+                message: `Station named \"${stationName}\" NOT found.`,
+                success: false,
+            });
+        }
+    else {
+        res.status(503);
+        res.send({
+            message: "Server is retrieving stations. Please wait.",
+            success: false,
+        });
+    }
+});
+
+router.get("/fetchTrains", async function (req, res) {
+    if (typeof req.query.latest !== "undefined")
+        await updateData().catch((e) => {
+            console.log(`Error: ${e}`);
+            res.send(500);
+            res.send({
+                message: env.SERVER_ERROR_MESSAGE,
+                success: false,
+            });
+        });
+
+    if (trainsData.trains) res.send({ ...trainsData, success: true });
+    else {
+        res.status(503);
+        res.send({
+            message: "Server is retrieving trains. Please wait.",
+            success: false,
+        });
+    }
 });
 
 router.get("/fetchTrain", function (req, res) {
+    res.status(400);
     res.send({
-        message: "Error: train number parameter must be supplied",
+        message: "Error: train number parameter not provided",
         success: false,
     });
 });
@@ -67,21 +121,37 @@ router.get("/fetchTrain/:trainNo", async function (req, res) {
     if (env.DEBUG) console.log(`Fetching train: ${trainNo}`);
 
     if (typeof req.query.latest !== "undefined")
-        await updateData().catch((e) =>
-            res.send({ message: `Error: ${e}`, success: false })
-        );
+        await updateData().catch((e) => {
+            console.log(`Error: ${e}`);
+            res.send(500);
+            res.send({
+                message: env.SERVER_ERROR_MESSAGE,
+                success: false,
+            });
+        });
 
-    globalData?.trains[trainNo]
-        ? res.send({
-              lastUpdatedAt: globalData?.lastUpdatedAt,
-              [trainNo]: globalData?.trains[trainNo],
-              success: true,
-          })
-        : res.send({
-              lastUpdatedAt: globalData?.lastUpdatedAt,
-              message: `Train number ${trainNo} NOT found. It might not have started yet.`,
-              success: false,
-          });
+    if (trainsData?.trains)
+        if (Object.keys(trainsData?.trains).includes(trainNo))
+            res.send({
+                lastUpdatedAt: trainsData.lastUpdatedAt,
+                [trainNo]: trainsData.trains[trainNo],
+                success: true,
+            });
+        else {
+            res.status(404);
+            res.send({
+                lastUpdatedAt: trainsData?.lastUpdatedAt,
+                message: `Train number \"${trainNo}\" NOT found. It might not have started yet.`,
+                success: false,
+            });
+        }
+    else {
+        res.status(503);
+        res.send({
+            message: "Server is retrieving trains. Please wait.",
+            success: false,
+        });
+    }
 });
 
 module.exports = router;

@@ -8,6 +8,7 @@ const env = {
     REPO_URL: "https://github.com/sibi361/konkan-railway_api",
     API_VERSION: 1,
     PUPPETEER_OPTS: { headless: "false" },
+    SERVER_ERROR_MESSAGE: "Server overloaded. Please wait.",
 };
 
 module.exports = env;
