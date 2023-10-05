@@ -1,11 +1,11 @@
 const env = require("../constants.js");
 const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
-const res = require("express/lib/response.js");
 
-const fetchData = async () =>
+const fetchData = async (oldTrainsData) =>
     puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {
-        if (env.DEBUG) console.log("Fetching trains data from upstream");
+        if (env.DEBUG)
+            console.log("fetchData: Fetching trains data from upstream");
 
         const page = await browser.newPage();
         const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
@@ -13,7 +13,7 @@ const fetchData = async () =>
 
         await page.goto(env.UPSTREAM_TRAINS_URL);
 
-        const response = await page.evaluate(() => {
+        const response = await page.evaluate((oldData) => {
             const toTitleCase = (input) => {
                 if (!input) return "";
 
@@ -35,6 +35,11 @@ const fetchData = async () =>
             const timeStamp =
                 `${timeSplit[0].split("/").reverse().join("-")}` +
                 `T${timeSplit[1]}`;
+
+            let updated = false;
+            if (oldData?.lastUpdatedAt === timeStamp)
+                return { data: { ...oldData }, updated };
+            else updated = true;
 
             const data = { lastUpdatedAt: timeStamp };
             const rows = Array.from(table.querySelectorAll("tr")).slice(3);
@@ -60,20 +65,28 @@ const fetchData = async () =>
                 };
             }, {});
 
-            return data;
-        });
-        response.count_trains = Object.keys(response.trains).length;
+            // fetchother side and get 2 stu
 
+            return { data, updated };
+        }, oldTrainsData);
         await browser.close();
-        if (env.DEBUG)
-            console.log(`Updated trains count: ${response.count_trains}`);
 
-        return response;
+        response.data.count_trains = Object.keys(response.data.trains).length;
+
+        if (env.DEBUG)
+            if (response.updated)
+                console.log(
+                    `fetchData: Updated trains count: ${response.data.count_trains}`
+                );
+            else console.log("fetchData: No new updates");
+
+        return response.data;
     });
 
 const fetchStations = () =>
     puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {
-        if (env.DEBUG) console.log("Fetching stations data from upstream");
+        if (env.DEBUG)
+            console.log("fetchStations: Fetching stations data from upstream");
 
         const page = await browser.newPage();
         const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
@@ -156,7 +169,8 @@ const fetchStations = () =>
         });
 
         await browser.close();
-        if (env.DEBUG) console.log(`Stations count: ${response.count}`);
+        if (env.DEBUG)
+            console.log(`fetchStations: Stations count: ${response.count}`);
 
         return response;
     });
