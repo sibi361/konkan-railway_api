@@ -1,6 +1,27 @@
 const env = require("../constants.js");
-const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
+
+const { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require("puppeteer");
+const puppeteer = require("puppeteer-extra");
+const blockResourcesPlugin = require("puppeteer-extra-plugin-block-resources")({
+    // everything except for "document" i.e. HTML is blocked to save bandwidth
+    blockedTypes: new Set([
+        "stylesheet",
+        "image",
+        "media",
+        "font",
+        "script",
+        "texttrack",
+        "xhr",
+        "fetch",
+        "eventsource",
+        "websocket",
+        "manifest",
+        "other",
+    ]),
+    interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
+});
+puppeteer.use(blockResourcesPlugin);
 
 const fetchTrains = async (oldTrainsData) =>
     puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {

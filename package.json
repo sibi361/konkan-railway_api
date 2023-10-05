@@ -12,7 +12,9 @@
     "license": "ISC",
     "dependencies": {
         "express": "^4.18.2",
-        "puppeteer": "^21.3.6"
+        "puppeteer": "^21.3.6",
+        "puppeteer-extra": "^3.3.6",
+        "puppeteer-extra-plugin-block-resources": "^2.4.3"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"

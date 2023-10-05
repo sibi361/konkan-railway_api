@@ -6,7 +6,7 @@ const scraper = require("../utils/scraper.js");
 let stationsData = {},
     trainsData = {};
 
-// fetch stations list
+// fetch stations list at init
 const browserResponse = scraper.fetchStations();
 browserResponse.then((data) => {
     stationsData = {
@@ -29,8 +29,7 @@ const updateData = () =>
         }
     });
 
-// at init
-updateData();
+updateData(); // at init
 
 // periodically refresh data from upstream
 setInterval(updateData, env.UPSTREAM_REFRESH_INTERVAL * 1000);
