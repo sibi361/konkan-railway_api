@@ -16,7 +16,6 @@ const fetchData = async (oldTrainsData) =>
         const response = await page.evaluate((oldData) => {
             const toTitleCase = (input) => {
                 if (!input) return "";
-
                 return input
                     .split(" ")
                     .map(
@@ -36,6 +35,7 @@ const fetchData = async (oldTrainsData) =>
                 `${timeSplit[0].split("/").reverse().join("-")}` +
                 `T${timeSplit[1]}`;
 
+            // proceed further only if upstream has new data
             let updated = false;
             if (oldData?.lastUpdatedAt === timeStamp)
                 return { data: { ...oldData }, updated };
@@ -65,10 +65,64 @@ const fetchData = async (oldTrainsData) =>
                 };
             }, {});
 
-            // fetchother side and get 2 stu
-
             return { data, updated };
         }, oldTrainsData);
+
+        await page.goto(env.UPSTREAM_STATIONS_URL);
+
+        response.data.trains = await page.evaluate((trains) => {
+            const trainTypeArr = document.querySelectorAll(
+                'input[type="hidden"][name^="trainType"]'
+            );
+            const trainTypeArrLen = trainTypeArr.length;
+
+            const trainDirectionArr = document.querySelectorAll(
+                'input[type="hidden"][name^="trainDirection"]'
+            );
+            const trainDirectionArrLen = trainDirectionArr.length;
+
+            if (trains)
+                trainsNew = Object.keys(trains)
+                    .slice(0)
+                    .reduce((trainsNewObj, trainName, i, inputArray) => {
+                        // break if num(hidden inputs) < num(trains)
+                        if (i === trainTypeArrLen || i === trainDirectionArrLen)
+                            inputArray.splice(i); // https://stackoverflow.com/a/47441371
+
+                        const typeValue = trainTypeArr[i]?.value
+                            .trim()
+                            .toLocaleUpperCase();
+                        let type;
+                        switch (typeValue) {
+                            case "EXP":
+                                type = "Express";
+                            case "SUP":
+                                type = "Superfast";
+                            case "ORD":
+                                type = "Passenger";
+                            case "RAJ":
+                                type = "Rajdhani";
+                            case "SHAT":
+                                type = "Shatabdi";
+                            case "ROR":
+                                type = "Goods";
+                        }
+
+                        return {
+                            ...trainsNewObj,
+                            [trainName]: {
+                                ...trains[trainName],
+                                type,
+                                direction: trainDirectionArr[i]?.value
+                                    .trim()
+                                    .toLocaleLowerCase(),
+                            },
+                        };
+                    }, {});
+
+            return trainsNew;
+        }, response.data.trains);
+
         await browser.close();
 
         response.data.count_trains = Object.keys(response.data.trains).length;
@@ -94,6 +148,8 @@ const fetchStations = () =>
 
         await page.goto(env.UPSTREAM_STATIONS_URL);
 
+        // await page.screenshot({ path: "ss.jpg" });
+
         const response = await page.evaluate(() => {
             const stationsSelectEle = document.querySelector("#stationId");
             const options = Array.from(
@@ -110,28 +166,35 @@ const fetchStations = () =>
             const stationTypeArr = document.querySelectorAll(
                 'input[type="hidden"][name^="stationType"]'
             );
+            const stationTypeArrLen = stationTypeArr.length;
+
             const stationStateArr = document.querySelectorAll(
                 'input[type="hidden"][name^="stationState"]'
             );
+            const stationStateArrLen = stationStateArr.length;
+
             const stationDescriptionArr = document.querySelectorAll(
                 'input[type="hidden"][name^="stationDescription"]'
             );
+            const stationDescriptionArrLen = stationDescriptionArr.length;
+
             const distanceArr = document.querySelectorAll(
                 'input[type="hidden"][name^="distance"]'
             );
+            const distanceArrLen = distanceArr.length;
 
             if (stations)
                 stations = Object.keys(stations)
                     .slice(0)
-                    .reduce((stationsObj, stName, i, arr) => {
+                    .reduce((stationsObj, stName, i, inputArray) => {
                         // break if num(hidden inputs) < num(select options)
                         if (
-                            i === stationTypeArr.length ||
-                            i === stationStateArr.length ||
-                            i === stationDescriptionArr.length ||
-                            i === distanceArr.length
+                            i === stationTypeArrLen ||
+                            i === stationStateArrLen ||
+                            i === stationDescriptionArrLen ||
+                            i === distanceArrLen
                         )
-                            arr.splice(i); // https://stackoverflow.com/a/47441371
+                            inputArray.splice(i); // https://stackoverflow.com/a/47441371
 
                         const stateValue = stationStateArr[i]?.value
                             .trim()
