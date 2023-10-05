@@ -35,18 +35,18 @@ const fetchTrains = async (oldTrainsData) =>
         await page.goto(env.UPSTREAM_URL);
 
         const response = await page.evaluate((oldData) => {
-            const toTitleCase = (input) => {
-                if (!input) return "";
-                return input
-                    .split(" ")
-                    .map(
-                        (word) =>
-                            `${word[0].toLocaleUpperCase()}${word
-                                .slice(1)
-                                .toLocaleLowerCase()}`
-                    )
-                    .join(" ");
-            };
+            // const toTitleCase = (input) => {
+            //     if (!input) return "";
+            //     return input
+            //         .split(" ")
+            //         .map(
+            //             (word) =>
+            //                 `${word[0].toLocaleUpperCase()}${word
+            //                     .slice(1)
+            //                     .toLocaleLowerCase()}`
+            //         )
+            //         .join(" ");
+            // };
 
             const timeStampSpan = document.querySelector(".lastupdatetext");
             const timeSplit = timeStampSpan.textContent.split(" ").slice(4, 6);
@@ -148,7 +148,8 @@ const fetchTrains = async (oldTrainsData) =>
                         [number]: {
                             name,
                             status: statusArr[i]?.value.toLocaleLowerCase(),
-                            station: toTitleCase(closedSationArr[i]?.value),
+                            station:
+                                closedSationArr[i]?.value.toLocaleLowerCase(),
                             statusTime: {
                                 hours: arrivedTimeSplit[0],
                                 minutes: arrivedTimeSplit[1],
@@ -200,7 +201,7 @@ const fetchStations = () =>
             let stations = options.reduce(
                 (stations, option) => ({
                     ...stations,
-                    [option.textContent.trim()]: {},
+                    [option.textContent.trim().toLocaleLowerCase()]: {},
                 }),
                 {}
             );
