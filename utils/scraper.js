@@ -86,13 +86,71 @@ const fetchStations = () =>
             const options = Array.from(
                 stationsSelectEle.querySelectorAll("option")
             ).slice(1); // exclude header
-            const stations = options.reduce(
+            let stations = options.reduce(
                 (stations, option) => ({
                     ...stations,
                     [option.textContent.trim()]: {},
                 }),
                 {}
             );
+
+            const stationTypeArr = document.querySelectorAll(
+                'input[type="hidden"][name^="stationType"]'
+            );
+            const stationStateArr = document.querySelectorAll(
+                'input[type="hidden"][name^="stationState"]'
+            );
+            const stationDescriptionArr = document.querySelectorAll(
+                'input[type="hidden"][name^="stationDescription"]'
+            );
+            const distanceArr = document.querySelectorAll(
+                'input[type="hidden"][name^="distance"]'
+            );
+
+            if (stations)
+                stations = Object.keys(stations)
+                    .slice(0)
+                    .reduce((stationsObj, stName, i, arr) => {
+                        // break if num(hidden inputs) < num(select options)
+                        if (
+                            i === stationTypeArr.length ||
+                            i === stationStateArr.length ||
+                            i === stationDescriptionArr.length ||
+                            i === distanceArr.length
+                        )
+                            arr.splice(i); // https://stackoverflow.com/a/47441371
+
+                        const stateValue = stationStateArr[i]?.value
+                            .trim()
+                            .toLocaleLowerCase();
+                        let state;
+                        switch (stateValue) {
+                            case "m":
+                                state = "Maharashtra";
+                                break;
+                            case "g":
+                                state = "Goa";
+                                break;
+                            case "k":
+                                state = "Karnataka";
+                                break;
+                            default:
+                                state = stateValue;
+                        }
+
+                        return {
+                            ...stationsObj,
+                            [stName]: {
+                                type: stationTypeArr[i]?.value
+                                    .trim()
+                                    .toLocaleLowerCase(),
+                                state,
+                                description:
+                                    stationDescriptionArr[i]?.value.trim(),
+                                distance: distanceArr[i]?.value.trim(),
+                            },
+                        };
+                    }, stations);
 
             return { stations, count: Object.keys(stations).length };
         });
