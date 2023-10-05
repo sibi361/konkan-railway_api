@@ -1,7 +1,7 @@
 services:
     app:
-        container_name: konkan-railway_api_v1
-        image: img_konkan-railway_api_v1
+        container_name: konkan-railway_api_v2
+        image: img_konkan-railway_api_v2
         restart: on-failure:3
         build:
             context: .
