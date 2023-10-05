@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
 
 const fetchData = async () =>
-    puppeteer.launch({ headless: "false" }).then(async function (browser) {
+    puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {
         if (env.DEBUG) console.log("Fetching trains data from upstream");
 
         const page = await browser.newPage();
@@ -69,7 +69,7 @@ const fetchData = async () =>
     });
 
 const fetchStations = () =>
-    puppeteer.launch({ headless: "false" }).then(async function (browser) {
+    puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {
         if (env.DEBUG) console.log("Fetching stations data from upstream");
 
         const page = await browser.newPage();
