@@ -2,7 +2,7 @@ const env = require("../constants.js");
 const puppeteer = require("puppeteer");
 const userAgents = require("../assets/userAgents.json");
 
-const fetchData = async (oldTrainsData) =>
+const fetchTrains = async (oldTrainsData) =>
     puppeteer.launch(env.PUPPETEER_OPTS).then(async function (browser) {
         if (env.DEBUG)
             console.log("fetchData: Fetching trains data from upstream");
@@ -11,7 +11,7 @@ const fetchData = async (oldTrainsData) =>
         const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
         await page.setUserAgent(UA);
 
-        await page.goto(env.UPSTREAM_TRAINS_URL);
+        await page.goto(env.UPSTREAM_URL);
 
         const response = await page.evaluate((oldData) => {
             const toTitleCase = (input) => {
@@ -27,10 +27,8 @@ const fetchData = async (oldTrainsData) =>
                     .join(" ");
             };
 
-            const table = document.querySelector("#empNoHelpList");
-
-            const timeStampRow = table.querySelectorAll("tr")[1];
-            const timeSplit = timeStampRow.textContent.split(" ").slice(4, 6);
+            const timeStampSpan = document.querySelector(".lastupdatetext");
+            const timeSplit = timeStampSpan.textContent.split(" ").slice(4, 6);
             const timeStamp =
                 `${timeSplit[0].split("/").reverse().join("-")}` +
                 `T${timeSplit[1]}`;
@@ -42,35 +40,31 @@ const fetchData = async (oldTrainsData) =>
             else updated = true;
 
             const data = { lastUpdatedAt: timeStamp };
-            const rows = Array.from(table.querySelectorAll("tr")).slice(3);
 
-            data.trains = Array.from(rows).reduce((trains, row) => {
-                const cells = row.querySelectorAll("td");
+            const trainDataArr = document.querySelectorAll(
+                'input[type="hidden"][name^="trainData"]'
+            );
 
-                return {
-                    ...trains,
-                    [cells[0].textContent.trim()]: {
-                        name: cells[1].textContent.trim(),
-                        status: cells[2].textContent.toLocaleLowerCase(),
-                        station: toTitleCase(cells[3].textContent),
-                        statusTime: {
-                            hours: cells[4].textContent.split(":")[0],
-                            minutes: cells[4].textContent.split(":")[1],
-                        },
-                        delayedTime: {
-                            hours: cells[5].textContent.split(":")[0],
-                            minutes: cells[5].textContent.split(":")[1],
-                        },
-                    },
-                };
-            }, {});
+            const statusArr = document.querySelectorAll(
+                'input[type="hidden"][name^="status"]'
+            );
+            const statusArrLen = statusArr.length;
 
-            return { data, updated };
-        }, oldTrainsData);
+            const closedSationArr = document.querySelectorAll(
+                'input[type="hidden"][name^="closedSation"]'
+            );
+            const closedSationArrLen = closedSationArr.length;
 
-        await page.goto(env.UPSTREAM_STATIONS_URL);
+            const arrivedTimeArr = document.querySelectorAll(
+                'input[type="hidden"][name^="arrivedTime"]'
+            );
+            const arrivedTimeArrLen = arrivedTimeArr.length;
 
-        response.data.trains = await page.evaluate((trains) => {
+            const lateTimeArr = document.querySelectorAll(
+                'input[type="hidden"][name^="lateTime"]'
+            );
+            const lateTimeArrLen = lateTimeArr.length;
+
             const trainTypeArr = document.querySelectorAll(
                 'input[type="hidden"][name^="trainType"]'
             );
@@ -81,48 +75,77 @@ const fetchData = async (oldTrainsData) =>
             );
             const trainDirectionArrLen = trainDirectionArr.length;
 
-            if (trains)
-                trainsNew = Object.keys(trains)
-                    .slice(0)
-                    .reduce((trainsNewObj, trainName, i, inputArray) => {
-                        // break if num(hidden inputs) < num(trains)
-                        if (i === trainTypeArrLen || i === trainDirectionArrLen)
-                            inputArray.splice(i); // https://stackoverflow.com/a/47441371
+            data.trains = Array.from(trainDataArr)
+                .slice(0)
+                .reduce((trains, trainData, i, inputArray) => {
+                    // break if num(hidden inputs) < num(select options)
+                    if (
+                        i === statusArrLen ||
+                        i === closedSationArrLen ||
+                        i === arrivedTimeArrLen ||
+                        i === lateTimeArrLen ||
+                        i === trainTypeArrLen ||
+                        i === trainDirectionArrLen
+                    )
+                        inputArray.splice(i); // https://stackoverflow.com/a/47441371
 
-                        const typeValue = trainTypeArr[i]?.value
-                            .trim()
-                            .toLocaleUpperCase();
-                        let type;
-                        switch (typeValue) {
-                            case "EXP":
-                                type = "Express";
-                            case "SUP":
-                                type = "Superfast";
-                            case "ORD":
-                                type = "Passenger";
-                            case "RAJ":
-                                type = "Rajdhani";
-                            case "SHAT":
-                                type = "Shatabdi";
-                            case "ROR":
-                                type = "Goods";
-                        }
+                    const trainDataSplit = trainData?.value.split(" ");
+                    const number = trainDataSplit[0];
+                    const name = trainDataSplit.slice(1, -2).join(" ");
+                    const arrivedTimeSplit =
+                        arrivedTimeArr[i]?.value.split(":");
+                    const lateTimeSplit = lateTimeArr[i]?.value.split(":");
 
-                        return {
-                            ...trainsNewObj,
-                            [trainName]: {
-                                ...trains[trainName],
-                                type,
-                                direction: trainDirectionArr[i]?.value
-                                    .trim()
-                                    .toLocaleLowerCase(),
+                    const typeValue = trainTypeArr[i]?.value
+                        .trim()
+                        .toLocaleUpperCase();
+                    let type;
+                    switch (typeValue) {
+                        case "EXP":
+                            type = "Express";
+                            break;
+                        case "SUP":
+                            type = "Superfast";
+                            break;
+                        case "ORD":
+                            type = "Passenger";
+                            break;
+                        case "RAJ":
+                            type = "Rajdhani";
+                            break;
+                        case "SHAT":
+                            type = "Shatabdi";
+                            break;
+                        case "ROR":
+                            type = "Goods";
+                            break;
+                        default:
+                            type = typeValue;
+                    }
+                    return {
+                        ...trains,
+                        [number]: {
+                            name,
+                            status: statusArr[i]?.value.toLocaleLowerCase(),
+                            station: toTitleCase(closedSationArr[i]?.value),
+                            statusTime: {
+                                hours: arrivedTimeSplit[0],
+                                minutes: arrivedTimeSplit[1],
                             },
-                        };
-                    }, {});
+                            delayedTime: {
+                                hours: lateTimeSplit[0],
+                                minutes: lateTimeSplit[1],
+                            },
+                            type,
+                            direction: trainDirectionArr[i]?.value
+                                .trim()
+                                .toLocaleLowerCase(),
+                        },
+                    };
+                }, {});
 
-            return trainsNew;
-        }, response.data.trains);
-
+            return { data, updated };
+        }, oldTrainsData);
         await browser.close();
 
         response.data.count_trains = Object.keys(response.data.trains).length;
@@ -146,9 +169,7 @@ const fetchStations = () =>
         const UA = userAgents[Math.floor(Math.random() * userAgents.length)].ua;
         await page.setUserAgent(UA);
 
-        await page.goto(env.UPSTREAM_STATIONS_URL);
-
-        // await page.screenshot({ path: "ss.jpg" });
+        await page.goto(env.UPSTREAM_URL);
 
         const response = await page.evaluate(() => {
             const stationsSelectEle = document.querySelector("#stationId");
@@ -239,6 +260,6 @@ const fetchStations = () =>
     });
 
 module.exports = {
-    fetchData,
+    fetchTrains,
     fetchStations,
 };

@@ -19,7 +19,7 @@ browserResponse.then((data) => {
 const updateData = () =>
     new Promise((resolve, reject) => {
         try {
-            const browserResponse = scraper.fetchData(trainsData);
+            const browserResponse = scraper.fetchTrains(trainsData);
             browserResponse.then((data) => {
                 trainsData = { ...data, ...trainsData };
                 resolve(data);
