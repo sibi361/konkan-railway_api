@@ -61,7 +61,7 @@ router.get("/fetchStation", function (req, res) {
 });
 
 router.get("/fetchStation/:stationName", function (req, res) {
-    const stationName = req.params.stationName;
+    const stationName = req.params.stationName.toLocaleLowerCase();
     if (env.DEBUG) console.log(`Fetching station: ${stationName}`);
 
     if (stationsData?.stations)
