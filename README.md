@@ -15,8 +15,20 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
     ```
     docker compose up --build
     ```
-    It will then be available by default at http://localhost:3000/api/v1/
 
+Docker Compose might not be viable for hosting on a cloud service such as MS Azure due to the requirement of `chrome.json`. In that case follow the Docker Container Method to deploy this API as a web app to Azure App Service.
+
+### Docker
+
+- Build a docker image
+    ```
+    docker build . -t img_konkan-railway_api_v2
+    ```
+    Note: Build it off the "azure" branch if not running locally
+- Create and run a container from the above image
+    ```
+    docker run -p 3000:3000 img_konkan-railway_api_v2
+    ```
 
 ### NodeJS
 
@@ -34,13 +46,12 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
     ```
     npm run start
     ```
-    It will then be available by default at http://localhost:3000/api/v1/
 
 Parameters such as the API listening port can be configured in ```.env``` for Docker Compose and ```constants.js``` for NodeJS.
 
 ## Available Endpoints
 
-All endpoints return JSON.
+All endpoints return JSON and serve at http://localhost:3000/api/v1/ by default.
 
 - `/api/v1/fetchData/`
     Returns details about all the trains and stations on the Konkan Railway route
