@@ -16,15 +16,18 @@ This API scrapes the [Konkan Railway Current Train Position](https://konkanrailw
     docker compose up --build
     ```
 
-Docker Compose might not be viable for hosting on a cloud service such as MS Azure due to the requirement of `chrome.json`. In that case follow the Docker Container Method to deploy this API as a web app to Azure App Service.
+Docker Compose might not be viable for hosting on a cloud service such as MS Azure due to the requirement of `chrome.json`. In that you may follow the Docker Method instead.
 
 ### Docker
 
+- Switch to the ```azure``` branch
+    ```
+    git checkout azure
+    ```
 - Build a docker image
     ```
     docker build . -t img_konkan-railway_api_v2
     ```
-    Note: Build it off the "azure" branch if not running locally
 - Create and run a container from the above image
     ```
     docker run -p 3000:3000 img_konkan-railway_api_v2
@@ -51,31 +54,35 @@ Parameters such as the API listening port can be configured in ```.env``` for Do
 
 ## Available Endpoints
 
-All endpoints return JSON and serve at http://localhost:3000/api/v1/ by default.
+All endpoints return JSON and serve at http://localhost:3000/api/v2/ by default.
 
-- `/api/v1/fetchData/`
-    Returns details about all the trains and stations on the Konkan Railway route
-
-    Appending `?latest` to the URL will trigger a manual update from the upstream
-
-- `/api/v1/fetchTrain/<TRAIN-NUMBER>`
-    Returns an object containing information about the train such as
-        - most recently arrived station
-        - arrival time
-        - delay time
+- `/api/v2/fetchTrains/`
+    Returns live status about all the trains currently moving on the Konkan Railway
 
     Appending `?latest` to the URL will trigger a manual update from the upstream
 
-- `/api/v1/fetchStations/`
-    Returns names of all the stations on the Konkan Railway route
+- `/api/v2/fetchTrain/<TRAIN-NUMBER>`
+    Returns an object containing information about the queried train such as
+        - most recently touched station
+        - arrived/departed time from that station
+        - delay time i.e. whether the train is late or not
 
+    Appending `?latest` to the URL will trigger a manual update from the upstream
+
+- `/api/v2/fetchStations/`
+    Returns an object containing all the stations on the Konkan Railway route
+
+- `/api/v2/fetchStation/<STATION-PLACE-NAME>`
+     Returns an object containing information about the queried station such as
+        - type i.e. big station or small station
+        - state
+        - description
 
 ## TODO
 
 - [ ] Implement rate limiting
-- [ ] Utilize `VisualTrain` upstream to get more info such as train type
-- [ ] Send PR to [public-api-lists](https://github.com/public-api-lists/public-api-lists)
-- [ ] Build Frontend
+- [x] Utilize `VisualTrain` upstream to get more info such as train type
+- [ ] Send PR to [public-api-lists](https://github.com/public-api-lists/public-api-lists) after hosting on a stable cloud as azure keeps suspending this API since it's currently running on free tier
 
 
 ## Motivation
